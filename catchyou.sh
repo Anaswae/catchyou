@@ -403,7 +403,7 @@ generatePadding > padding.c
 cat padding.c >> $X
 generatePadding > padding.c
 cat padding.c >> $X
-generatePadding > padding.c
+rm -rf padding.c
 mv $X $X.c
 
 
