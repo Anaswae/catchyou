@@ -1,4 +1,4 @@
-# CatchYou v1.0
+# CatchYou v1.1
 ## Author: github.com/thelinuxchoice/catchyou
 ## Twitter: twitter.com/linux_choice
 ### Read the license before using any part from this code :) 
